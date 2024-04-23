@@ -8,6 +8,9 @@ contract Token {
     string public symbol;
     uint256 public decimals = 18;
     uint256 public totalSupply;
+    address public owner;
+
+    mapping(address => uint256) public balanceOf;
 
     constructor(
         string memory _name,
@@ -16,5 +19,7 @@ contract Token {
         name = _name;
         symbol = _symbol;
         totalSupply = _totalSupply * (10**decimals);
+        balanceOf[msg.sender] = totalSupply;
+        owner = msg.sender;
     }
 }
