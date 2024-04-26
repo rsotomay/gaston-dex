@@ -116,7 +116,7 @@ describe("Token", () => {
 
       it("emits approve event", async () => {
         const event = result.events[0];
-        expect(event.event).to.equal("Approve");
+        expect(event.event).to.equal("Approval");
 
         const args = event.args;
         expect(args.owner).to.equal(deployer.address);
@@ -130,6 +130,59 @@ describe("Token", () => {
           token
             .connect(deployer)
             .approve("0x0000000000000000000000000000000000000000", amount)
+        ).to.be.reverted;
+      });
+    });
+  });
+
+  describe("Delegated Token Transfer", () => {
+    let amount, transaction, result;
+
+    beforeEach(async () => {
+      amount = tokens(100);
+      transaction = await token
+        .connect(deployer)
+        .approve(exchange.address, amount);
+      result = await transaction.wait();
+    });
+    describe("Success", () => {
+      beforeEach(async () => {
+        amount = tokens(100);
+        transaction = await token
+          .connect(exchange)
+          .transferFrom(deployer.address, receiver.address, amount);
+        result = await transaction.wait();
+      });
+      it("transfer delegated token balances", async () => {
+        expect(await token.balanceOf(deployer.address)).to.equal(
+          tokens(999900)
+        );
+        expect(await token.balanceOf(receiver.address)).to.equal(amount);
+      });
+
+      it("resets the allowance", async () => {
+        expect(
+          await token.allowance(deployer.address, exchange.address)
+        ).to.equal(0);
+      });
+
+      it("emits transfer event", async () => {
+        const event = result.events[0];
+        expect(event.event).to.equal("Transfer");
+
+        const args = event.args;
+        expect(args.from).to.equal(deployer.address);
+        expect(args.to).to.equal(receiver.address);
+        expect(args.value).to.equal(amount);
+      });
+    });
+    describe("Failure", () => {
+      it("rejects transfer of too many tokens", async () => {
+        const invalidAmount = tokens(101);
+        await expect(
+          token
+            .connect(exchange)
+            .transferFrom(deployer.address, receiver.address, invalidAmount)
         ).to.be.reverted;
       });
     });
