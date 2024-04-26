@@ -40,10 +40,6 @@ describe("Token", () => {
       expect(await token.totalSupply()).to.equal(totalSupply);
     });
 
-    it("has correct owner", async () => {
-      expect(await token.owner()).to.equal(deployer.address);
-    });
-
     it("assigns total supply to deployer", async () => {
       expect(await token.balanceOf(deployer.address)).to.equal(totalSupply);
     });

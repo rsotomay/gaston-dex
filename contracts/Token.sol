@@ -8,7 +8,6 @@ contract Token {
     string public symbol;
     uint256 public decimals = 18;
     uint256 public totalSupply;
-    address public owner;
 
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
@@ -33,11 +32,10 @@ contract Token {
         symbol = _symbol;
         totalSupply = _totalSupply * (10**decimals);
         balanceOf[msg.sender] = totalSupply;
-        owner = msg.sender;
     }
 
     function transfer(address _to, uint256 _value) public returns(bool success) {
-        require(balanceOf[msg.sender] >= _value,"There are not enough funds");
+        require(balanceOf[msg.sender] >= _value,"Not enough funds available");
         _transfer(msg.sender, _to, _value);
         return true;
     }
@@ -58,7 +56,7 @@ contract Token {
 
     function transferFrom(address _from, address _to, uint256 _value) public returns(bool success) {
         require(_value <= allowance[_from][msg.sender]);
-        require(_value <= balanceOf[_from], "not enough funds availabe");
+        require(_value <= balanceOf[_from], "Not enough funds availabe");
         _transfer(_from, _to, _value);
         allowance[_from][msg.sender] -= _value;
         return true;
