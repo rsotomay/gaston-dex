@@ -237,8 +237,6 @@ describe("Exchange", () => {
         expect(args.amountGive).to.equal(amountToken1);
         expect(args.timestamp).to.equal(now);
       });
-
-      it("", async () => {});
     });
 
     describe("Failure", () => {
@@ -255,6 +253,69 @@ describe("Exchange", () => {
               invalidAmount
             )
         ).to.be.reverted;
+      });
+    });
+  });
+
+  describe("Order Actions", () => {
+    let transaction, result;
+    let amountToken1, amountToken2, amount;
+    amountToken1 = tokens(1);
+    amountToken2 = tokens(1);
+    amount = tokens(1);
+
+    beforeEach(async () => {
+      transaction = await token1
+        .connect(user1)
+        .approve(exchange.address, amount);
+      result = await transaction.wait();
+
+      transaction = await exchange
+        .connect(user1)
+        .depositToken(token1.address, amount);
+      result = await transaction.wait();
+
+      transaction = await exchange
+        .connect(user1)
+        .makeOrder(token2.address, amountToken2, token1.address, amountToken1);
+      result = await transaction.wait();
+    });
+
+    describe("Cancelling Orders", () => {
+      describe("Seccess", () => {
+        beforeEach(async () => {
+          transaction = await exchange.connect(user1).cancelOrder(1);
+          result = await transaction.wait();
+        });
+
+        it("updates cancelled orders", async () => {
+          expect(await exchange.orderCancelled(1)).to.equal(true);
+        });
+
+        it("emits cancel event", async () => {
+          let now = await time.latest();
+          const event = result.events[0];
+          expect(event.event).to.equal("Cancel");
+
+          const args = event.args;
+          expect(args.id).to.equal(1);
+          expect(args.user).to.equal(user1.address);
+          expect(args.tokenGet).to.equal(token2.address);
+          expect(args.amountGet).to.equal(amountToken2);
+          expect(args.tokenGive).to.equal(token1.address);
+          expect(args.amountGive).to.equal(amountToken1);
+          expect(args.timestamp).to.equal(now);
+        });
+      });
+
+      describe("Failure", () => {
+        it("rejects cancelation of invalid order Ids", async () => {
+          await expect(exchange.connect(user1).cancelOrder(2)).to.be.reverted;
+        });
+
+        it("rejects cancellation of order owned by other users", async () => {
+          await expect(exchange.connect(user2).cancelOrder(1)).to.be.reverted;
+        });
       });
     });
   });
