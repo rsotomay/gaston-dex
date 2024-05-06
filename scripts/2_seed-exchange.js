@@ -40,7 +40,7 @@ async function main() {
     "Exchange",
     config[chainId].exchange.address
   );
-  console.log(`exchange Token fetched: ${exchange.address}\n`);
+  console.log(`exchange contract fetched: ${exchange.address}\n`);
 
   // Distribute tokens
   const sender = accounts[0];
@@ -104,7 +104,7 @@ async function main() {
 
   //User1 cancels order
   let orderId;
-  orderId = result.event[0].args.id;
+  orderId = result.events[0].args.id;
   transaction = await exchange.connect(user1).cancelOrder(orderId);
   result = await transaction.wait();
   console.log(`Order cancelled by ${user1.address}\n`);
@@ -125,7 +125,7 @@ async function main() {
 
   //User2 fills the order
   orderId = result.events[0].args.id;
-  transaction = await exchange.connect(user1).fillOrder(orderId);
+  transaction = await exchange.connect(user2).fillOrder(orderId);
   result = await transaction.wait();
   console.log(`Order filled from ${user2.address}\n`);
 
@@ -157,7 +157,7 @@ async function main() {
 
   //User2 fills another order
   orderId = result.events[0].args.id;
-  transaction = await exchange.connect(user1).fillOrder(orderId);
+  transaction = await exchange.connect(user2).fillOrder(orderId);
   result = await transaction.wait();
   console.log(`Order filled from ${user2.address}\n`);
 
@@ -174,7 +174,9 @@ async function main() {
       .connect(user1)
       .makeOrder(mETH.address, tokens(10 * i), gstn.address, tokens(10));
     result = await transaction.wait();
-    console.log(`Made order from ${user1.address}\n`);
+    console.log(
+      `Made order from ${user1.address} of ${i * 10} mETH for 10 gstn\n`
+    );
     // Wait 1 second
     await wait(1);
   }
@@ -185,7 +187,9 @@ async function main() {
       .connect(user2)
       .makeOrder(gstn.address, tokens(10), mETH.address, tokens(10 * i));
     result = await transaction.wait();
-    console.log(`Made order from ${user2.address}\n`);
+    console.log(
+      `Made order from ${user2.address} of 10 gstn for ${i * 10} mETH\n`
+    );
     // Wait 1 second
     await wait(1);
   }
