@@ -15,7 +15,7 @@ async function main() {
 
   // Fetch Network
   const { chainId } = await ethers.provider.getNetwork();
-  console.log(`Chain Id: ${chainId}`);
+  console.log(`Using chainId: ${chainId}`);
   //Fetch token contracts
   // Fetch GASton Token
   const gstn = await ethers.getContractAt(
@@ -169,6 +169,7 @@ async function main() {
   //
 
   // user1 makes 10 orders
+  console.log("Now user1 opens 10 orders...\n");
   for (let i = 1; i <= 10; i++) {
     transaction = await exchange
       .connect(user1)
@@ -182,6 +183,7 @@ async function main() {
   }
 
   // User2 makes 10 orders
+  console.log("Now user2 opens 10 orders...\n");
   for (let i = 1; i <= 10; i++) {
     transaction = await exchange
       .connect(user2)
