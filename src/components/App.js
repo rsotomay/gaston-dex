@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import config from "../config.json";
 
 import {
   loadProvider,
@@ -19,14 +18,12 @@ function App() {
     const chainId = await loadNetwork(provider, dispatch);
     await loadAccount(dispatch);
 
-    // Connect token smart contract
-    const gstn = config[chainId].gstn;
-    const mETH = config[chainId].mETH;
-    await loadTokens(provider, [gstn.address, mETH.address], dispatch);
+    // // Connect token smart contract
+    await loadTokens(provider, chainId, dispatch);
 
-    // Connect exchange contract
-    const exchange = config[chainId].exchange;
-    await loadExchange(provider, exchange.address, dispatch);
+    // // Connect exchange contract
+    // const exchange = config[chainId].exchange;
+    await loadExchange(provider, chainId, dispatch);
   };
 
   useEffect(() => {

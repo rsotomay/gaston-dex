@@ -1,24 +1,42 @@
-import { legacy_createStore, combineReducers, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-import { composeWithDevTools } from "redux-devtools-extension";
+import { configureStore } from "@reduxjs/toolkit";
 
-/* Import Reducers */
-import { provider, tokens, exchange } from "./reducers";
+import provider from "./reducers/provider";
+import tokens from "./reducers/tokens";
+import exchange from "./reducers/exchange";
 
-const reducer = combineReducers({
-  provider,
-  tokens,
-  exchange,
+export const store = configureStore({
+  reducer: {
+    provider,
+    tokens,
+    exchange,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
-const initialState = {};
+// import { legacy_createStore, combineReducers, applyMiddleware } from "redux";
+// import thunk from "redux-thunk";
+// import { composeWithDevTools } from "redux-devtools-extension";
 
-const middleware = [thunk];
+// /* Import Reducers */
+// import { provider, tokens, exchange } from "./reducers";
 
-const store = legacy_createStore(
-  reducer,
-  initialState,
-  composeWithDevTools(applyMiddleware(...middleware))
-);
+// const reducer = combineReducers({
+//   provider,
+//   tokens,
+//   exchange,
+// });
 
-export default store;
+// const initialState = {};
+
+// const middleware = [thunk];
+
+// const store = legacy_createStore(
+//   reducer,
+//   initialState,
+//   composeWithDevTools(applyMiddleware(...middleware))
+// );
+
+// export default store;
