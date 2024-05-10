@@ -35,7 +35,7 @@ async function main() {
   );
   console.log(`mETH Token fetched: ${mETH.address}\n`);
 
-  // Fetch mETH Token
+  // Fetch exchange contract
   const exchange = await ethers.getContractAt(
     "Exchange",
     config[chainId].exchange.address
