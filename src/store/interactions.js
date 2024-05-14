@@ -2,7 +2,12 @@ import { ethers } from "ethers";
 import TOKEN_ABI from "../abis/Token.json";
 import EXCHANGE_ABI from "../abis/Exchange.json";
 import config from "../config.json";
-import { setProvider, setNetwork, setAccount } from "./reducers/provider";
+import {
+  setProvider,
+  setNetwork,
+  setAccount,
+  setBalance,
+} from "./reducers/provider";
 import { setContracts, setSymbols } from "./reducers/tokens";
 import { setExchange } from "./reducers/exchange";
 
@@ -20,12 +25,16 @@ export const loadNetwork = async (provider, dispatch) => {
   return chainId;
 };
 
-export const loadAccount = async (dispatch) => {
+export const loadAccount = async (provider, dispatch) => {
   const accounts = await window.ethereum.request({
     method: "eth_requestAccounts",
   });
   const account = ethers.utils.getAddress(accounts[0]);
   dispatch(setAccount(account));
+
+  let balance = await provider.getBalance(account);
+  balance = ethers.utils.formatEther(balance);
+  dispatch(setBalance(balance));
 
   return account;
 };
@@ -45,14 +54,12 @@ export const loadTokens = async (provider, chainId, dispatch) => {
 
   dispatch(setContracts([gstn, mETH]));
   dispatch(setSymbols([await gstn.symbol(), await mETH.symbol()]));
-
-  return gstn, mETH;
 };
 
 export const loadExchange = async (provider, chainId, dispatch) => {
   const exchange = new ethers.Contract(
     config[chainId].exchange.address,
-    TOKEN_ABI,
+    EXCHANGE_ABI,
     provider
   );
   dispatch(setExchange(exchange));

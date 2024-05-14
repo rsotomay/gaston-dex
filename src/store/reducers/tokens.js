@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const DEFAULT_TOKENS_STATE = {
+  contracts: [],
+  symbols: [],
+  balances: [0, 0],
+};
+
 export const tokens = createSlice({
   name: "tokens",
-  initialState: {
-    contracts: [],
-    symbols: [],
-    balances: [0, 0],
-  },
+  initialState: { DEFAULT_TOKENS_STATE },
   reducers: {
     setContracts: (state, action) => {
       state.contracts = action.payload;

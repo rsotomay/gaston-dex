@@ -15,14 +15,13 @@ function App() {
   const loadBlockchainData = async () => {
     // Connect Ethers to blockchain
     const provider = loadProvider(dispatch);
+    // Fetch current network chainId
     const chainId = await loadNetwork(provider, dispatch);
-    await loadAccount(dispatch);
-
-    // // Connect token smart contract
+    //Fetch current account and balance
+    await loadAccount(provider, dispatch);
+    // // Load token smart contract
     await loadTokens(provider, chainId, dispatch);
-
-    // // Connect exchange contract
-    // const exchange = config[chainId].exchange;
+    // // Load exchange contract
     await loadExchange(provider, chainId, dispatch);
   };
 
