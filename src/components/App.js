@@ -19,8 +19,14 @@ function App() {
     const provider = loadProvider(dispatch);
     // Fetch current network chainId
     const chainId = await loadNetwork(provider, dispatch);
-    //Fetch current account and balance
-    await loadAccount(provider, dispatch);
+    //Reload page when network changes
+    window.ethereum.on("chainChanged", () => {
+      window.location.reload();
+    });
+    //Fetch current account and balance from Metamask when account changes
+    window.ethereum.on("accountsChanged", () => {
+      loadAccount(provider, dispatch);
+    });
     // // Load token smart contract
     await loadTokens(provider, chainId, dispatch);
     // // Load exchange contract
