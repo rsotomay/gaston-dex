@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import TOKEN_ABI from "../abis/Token.json";
 import EXCHANGE_ABI from "../abis/Exchange.json";
 import config from "../config.json";
+
 import {
   setProvider,
   setNetwork,
@@ -39,21 +40,23 @@ export const loadAccount = async (provider, dispatch) => {
   return account;
 };
 
-export const loadTokens = async (provider, chainId, dispatch) => {
-  const gstn = new ethers.Contract(
-    config[chainId].gstn.address,
-    TOKEN_ABI,
-    provider
-  );
+export const loadTokens = async (provider, addresses, dispatch) => {
+  try {
+    // Loading Tokens
+    const gstn = new ethers.Contract(addresses[0], TOKEN_ABI, provider);
 
-  const mETH = new ethers.Contract(
-    config[chainId].mETH.address,
-    TOKEN_ABI,
-    provider
-  );
+    const mETH = new ethers.Contract(addresses[1], TOKEN_ABI, provider);
 
-  dispatch(setContracts([gstn, mETH]));
-  dispatch(setSymbols([await gstn.symbol(), await mETH.symbol()]));
+    if (!gstn || !mETH) {
+      throw new Error("Failed to get token contracts");
+    }
+
+    dispatch(setContracts([gstn, mETH]));
+    dispatch(setSymbols([await gstn.symbol(), await mETH.symbol()]));
+  } catch (error) {
+    console.error("Failed to load tokens:", error);
+    throw error;
+  }
 };
 
 export const loadExchange = async (provider, chainId, dispatch) => {

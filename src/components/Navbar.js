@@ -15,7 +15,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   const connectHandler = async () => {
-    const account = await loadAccount(provider, dispatch);
+    loadAccount(provider, dispatch);
   };
 
   const networkHandler = async (e) => {
@@ -29,7 +29,7 @@ const Navbar = () => {
     <div className="exchange__header grid">
       <div className="exchange__header--brand flex">
         <img src={gstn_logo} className="logo" alt="Gaston Logo"></img>
-        <h1> Gaston Token Exchange</h1>
+        <h1> Gaston's DEX</h1>
       </div>
 
       <div className="exchange__header--networks flex">
@@ -65,7 +65,7 @@ const Navbar = () => {
           <a
             href={
               config[chainId]
-                ? `${config[chainId].exlorerURL}/address/${account}`
+                ? `${config[chainId].explorerURL}/address/${account}`
                 : "#"
             }
             target="_blank"
