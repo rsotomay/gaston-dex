@@ -12,6 +12,7 @@ import {
 
 import Navbar from "./Navbar.js";
 import Markets from "./Markets.js";
+import Balance from "./Balance.js";
 
 function App() {
   const dispatch = useDispatch();
@@ -49,7 +50,7 @@ function App() {
         <section className="exchange__section--left grid">
           <Markets />
 
-          {/* Balance */}
+          <Balance />
 
           {/* Order */}
         </section>

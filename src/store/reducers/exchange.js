@@ -9,9 +9,12 @@ export const exchange = createSlice({
     setExchange: (state, action) => {
       state.contract = action.payload;
     },
+    exchangeBalancesLoaded: (state, action) => {
+      state.balances = action.payload;
+    },
   },
 });
 
-export const { setExchange } = exchange.actions;
+export const { setExchange, exchangeBalancesLoaded } = exchange.actions;
 
 export default exchange.reducer;

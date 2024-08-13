@@ -9,8 +9,12 @@ import {
   setAccount,
   setBalance,
 } from "./reducers/provider";
-import { setContracts, setSymbols } from "./reducers/tokens";
-import { setExchange } from "./reducers/exchange";
+import {
+  tokenBalancesLoaded,
+  setContracts,
+  setSymbols,
+} from "./reducers/tokens";
+import { setExchange, exchangeBalancesLoaded } from "./reducers/exchange";
 
 export const loadProvider = (dispatch) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -68,6 +72,32 @@ export const loadExchange = async (provider, chainId, dispatch) => {
   dispatch(setExchange(exchange));
 
   return exchange;
+};
+
+export const loadBalances = async (exchange, tokens, account, dispatch) => {
+  try {
+    let balance = ethers.utils.formatUnits(
+      await tokens[0].balanceOf(account),
+      18
+    );
+    balance = ethers.utils.formatUnits(await tokens[1].balanceOf(account), 18);
+
+    let exchangeBalance = ethers.utils.formatUnits(
+      await exchange.exchangeBalanceOf(tokens[0].address, account),
+      18
+    );
+
+    exchangeBalance = ethers.utils.formatUnits(
+      await exchange.exchangeBalanceOf(tokens[1].address, account),
+      18
+    );
+
+    dispatch(tokenBalancesLoaded([balance, balance]));
+    dispatch(exchangeBalancesLoaded([exchangeBalance, exchangeBalance]));
+  } catch (error) {
+    console.error("Failed to load balance:", error);
+    throw error;
+  }
 };
 
 // export const loadProvider = (dispatch) => {
