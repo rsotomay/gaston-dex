@@ -8,6 +8,7 @@ import {
   loadAccount,
   loadTokens,
   loadExchange,
+  subscribeToEvents,
 } from "../store/interactions";
 
 import Navbar from "./Navbar.js";
@@ -35,7 +36,9 @@ function App() {
     const mETH = config[chainId].mETH;
     await loadTokens(provider, [gstn.address, mETH.address], dispatch);
     // // Load exchange contract
-    await loadExchange(provider, chainId, dispatch);
+    const exchange = await loadExchange(provider, chainId, dispatch);
+    //Listen to events
+    subscribeToEvents(exchange, dispatch);
   };
 
   useEffect(() => {

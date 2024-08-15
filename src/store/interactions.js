@@ -14,7 +14,13 @@ import {
   setContracts,
   setSymbols,
 } from "./reducers/tokens";
-import { setExchange, exchangeBalancesLoaded } from "./reducers/exchange";
+import {
+  setExchange,
+  exchangeBalancesLoaded,
+  depositRequest,
+  depositSuccess,
+  depositFail,
+} from "./reducers/exchange";
 
 export const loadProvider = (dispatch) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -74,29 +80,68 @@ export const loadExchange = async (provider, chainId, dispatch) => {
   return exchange;
 };
 
+export const subscribeToEvents = (exchange, dispatch) => {
+  exchange.on("Deposit", (token, user, amount, balance, event) => {
+    dispatch(depositSuccess(event));
+  });
+};
+
 export const loadBalances = async (exchange, tokens, account, dispatch) => {
   try {
-    let balance = ethers.utils.formatUnits(
-      await tokens[0].balanceOf(account),
-      18
-    );
-    balance = ethers.utils.formatUnits(await tokens[1].balanceOf(account), 18);
+    const token_1_Balance = await tokens[0].balanceOf(account);
+    const token_2_Balance = await tokens[1].balanceOf(account);
 
-    let exchangeBalance = ethers.utils.formatUnits(
-      await exchange.exchangeBalanceOf(tokens[0].address, account),
-      18
+    const exchangeToken_1_Balance = await exchange.exchangeBalanceOf(
+      tokens[0].address,
+      account
     );
-
-    exchangeBalance = ethers.utils.formatUnits(
-      await exchange.exchangeBalanceOf(tokens[1].address, account),
-      18
+    const exchangeToken_2_Balance = await exchange.exchangeBalanceOf(
+      tokens[1].address,
+      account
     );
 
-    dispatch(tokenBalancesLoaded([balance, balance]));
-    dispatch(exchangeBalancesLoaded([exchangeBalance, exchangeBalance]));
+    dispatch(
+      tokenBalancesLoaded([
+        ethers.utils.formatUnits(token_1_Balance, 18),
+        ethers.utils.formatUnits(token_2_Balance, 18),
+      ])
+    );
+    dispatch(
+      exchangeBalancesLoaded([
+        ethers.utils.formatUnits(exchangeToken_1_Balance, 18),
+        ethers.utils.formatUnits(exchangeToken_2_Balance, 18),
+      ])
+    );
   } catch (error) {
     console.error("Failed to load balance:", error);
     throw error;
+  }
+};
+
+export const depositTokens = async (
+  provider,
+  exchange,
+  transferType,
+  token,
+  amount,
+  dispatch
+) => {
+  try {
+    dispatch(depositRequest());
+    const signer = await provider.getSigner();
+    const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18);
+    let transaction;
+
+    transaction = await token
+      .connect(signer)
+      .approve(exchange.address, amountToTransfer);
+    await transaction.wait();
+    transaction = await exchange
+      .connect(signer)
+      .depositToken(token.address, amountToTransfer);
+    await transaction.wait();
+  } catch (error) {
+    dispatch(depositFail());
   }
 };
 
