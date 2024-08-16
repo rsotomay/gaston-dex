@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import gstn_logo from "../assets/gstn_logo.png";
 import eth from "../assets/eth.svg";
+import rvl_logo from "../assets/rvl_logo.png";
 import { loadBalances, depositTokens } from "../store/interactions";
 
 const Balance = () => {
+  const [isDeposit, setIsDeposit] = useState(true);
   const [token1DepositAmount, setToken1DepositAmount] = useState(0);
   const [token2DepositAmount, setToken2DepositAmount] = useState(0);
 
@@ -19,8 +21,22 @@ const Balance = () => {
   const depositInProgress = useSelector(
     (state) => state.exchange.depositing.depositInProgress
   );
+  const depositRef = useRef(null);
+  const withdrawRef = useRef(null);
 
   const dispatch = useDispatch();
+
+  const tabHandler = (e) => {
+    if (e.target.className !== depositRef.current.className) {
+      e.target.className = "tab tab--active";
+      depositRef.current.className = "tab";
+      setIsDeposit(false);
+    } else {
+      e.target.className = "tab tab--active";
+      withdrawRef.current.className = "tab";
+      setIsDeposit(true);
+    }
+  };
 
   const amountHandler = (e, token) => {
     if (token.address === tokens[0].address) {
@@ -66,8 +82,16 @@ const Balance = () => {
       <div className="component__header flex-between">
         <h2>Balance</h2>
         <div className="tabs">
-          <button className="tab tab--active">Deposit</button>
-          <button className="tab">Withdraw</button>
+          <button
+            onClick={tabHandler}
+            ref={depositRef}
+            className="tab tab--active"
+          >
+            Deposit
+          </button>
+          <button onClick={tabHandler} ref={withdrawRef} className="tab">
+            Withdraw
+          </button>
         </div>
       </div>
 
@@ -104,7 +128,7 @@ const Balance = () => {
           />
 
           <button className="button" type="submit">
-            <span>Deposit</span>
+            {isDeposit ? <span>Deposit</span> : <span>Withdraw</span>}
           </button>
         </form>
       </div>
@@ -118,7 +142,12 @@ const Balance = () => {
           <p>
             <small>Token</small>
             <br />
-            <img src={eth} className="logo3" alt="TokenLogo" />
+            {symbols[1] === "mETH" ? (
+              <img src={eth} className="logo3" alt="TokenLogo" />
+            ) : (
+              <img src={rvl_logo} className="logo3" alt="TokenLogo" />
+            )}
+
             {symbols[1]}
           </p>
           <p>
@@ -144,7 +173,7 @@ const Balance = () => {
           />
 
           <button className="button" type="submit">
-            <span></span>
+            {isDeposit ? <span>Deposit</span> : <span>Withdraw</span>}
           </button>
         </form>
       </div>
