@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import gstn_logo from "../assets/gstn_logo.png";
+import eth from "../assets/eth.svg";
 import { loadBalances, depositTokens } from "../store/interactions";
 
 const Balance = () => {
   const [token1DepositAmount, setToken1DepositAmount] = useState(0);
+  const [token2DepositAmount, setToken2DepositAmount] = useState(0);
 
   const provider = useSelector((state) => state.provider.connection);
   const symbols = useSelector((state) => state.tokens.symbols);
@@ -23,6 +25,8 @@ const Balance = () => {
   const amountHandler = (e, token) => {
     if (token.address === tokens[0].address) {
       setToken1DepositAmount(e.target.value);
+    } else {
+      setToken2DepositAmount(e.target.value);
     }
   };
 
@@ -38,6 +42,16 @@ const Balance = () => {
         dispatch
       );
       setToken1DepositAmount(0);
+    } else {
+      depositTokens(
+        provider,
+        exchange,
+        "Deposit",
+        token,
+        token2DepositAmount,
+        dispatch
+      );
+      setToken2DepositAmount(0);
     }
   };
 
@@ -100,11 +114,34 @@ const Balance = () => {
       {/* Deposit/Withdraw Component 2 (mETH) */}
 
       <div className="exchange__transfers--form">
-        <div className="flex-between"></div>
+        <div className="flex-between">
+          <p>
+            <small>Token</small>
+            <br />
+            <img src={eth} className="logo3" alt="TokenLogo" />
+            {symbols[1]}
+          </p>
+          <p>
+            <small>Wallet</small>
+            <br />
+            {tokenBalances && tokenBalances[1]}
+          </p>
+          <p>
+            <small>Exchange</small>
+            <br />
+            {exchangeBalances && exchangeBalances[1]}
+          </p>
+        </div>
 
-        <form>
-          <label htmlFor="token1"></label>
-          <input type="text" id="token1" placeholder="0.0000" />
+        <form onSubmit={(e) => depositHandler(e, tokens[1])}>
+          <label htmlFor="token1">{symbols && symbols[1]} Amount</label>
+          <input
+            type="text"
+            id="token1"
+            placeholder="0.0000"
+            value={token2DepositAmount === 0 ? "" : token2DepositAmount}
+            onChange={(e) => amountHandler(e, tokens[1])}
+          />
 
           <button className="button" type="submit">
             <span></span>
