@@ -3,12 +3,12 @@ import { useSelector, useDispatch } from "react-redux";
 import gstn_logo from "../assets/gstn_logo.png";
 import eth from "../assets/eth.svg";
 import rvl_logo from "../assets/rvl_logo.png";
-import { loadBalances, depositTokens } from "../store/interactions";
+import { loadBalances, transferTokens } from "../store/interactions";
 
 const Balance = () => {
   const [isDeposit, setIsDeposit] = useState(true);
-  const [token1DepositAmount, setToken1DepositAmount] = useState(0);
-  const [token2DepositAmount, setToken2DepositAmount] = useState(0);
+  const [token1TransferAmount, setToken1TransferAmount] = useState(0);
+  const [token2TransferAmount, setToken2TransferAmount] = useState(0);
 
   const provider = useSelector((state) => state.provider.connection);
   const symbols = useSelector((state) => state.tokens.symbols);
@@ -21,6 +21,10 @@ const Balance = () => {
   const depositInProgress = useSelector(
     (state) => state.exchange.depositing.depositInProgress
   );
+  const withdrawInProgress = useSelector(
+    (state) => state.exchange.withdrawing.withdrawInProgress
+  );
+
   const depositRef = useRef(null);
   const withdrawRef = useRef(null);
 
@@ -40,34 +44,59 @@ const Balance = () => {
 
   const amountHandler = (e, token) => {
     if (token.address === tokens[0].address) {
-      setToken1DepositAmount(e.target.value);
+      setToken1TransferAmount(e.target.value);
     } else {
-      setToken2DepositAmount(e.target.value);
+      setToken2TransferAmount(e.target.value);
     }
   };
 
   const depositHandler = (e, token) => {
     e.preventDefault();
     if (token.address === tokens[0].address) {
-      depositTokens(
+      transferTokens(
         provider,
         exchange,
         "Deposit",
         token,
-        token1DepositAmount,
+        token1TransferAmount,
         dispatch
       );
-      setToken1DepositAmount(0);
+      setToken1TransferAmount(0);
     } else {
-      depositTokens(
+      transferTokens(
         provider,
         exchange,
         "Deposit",
         token,
-        token2DepositAmount,
+        token2TransferAmount,
         dispatch
       );
-      setToken2DepositAmount(0);
+      setToken2TransferAmount(0);
+    }
+  };
+
+  const withdrawHandler = (e, token) => {
+    e.preventDefault();
+    if (token.address === tokens[0].address) {
+      transferTokens(
+        provider,
+        exchange,
+        "Withdrawal",
+        token,
+        token1TransferAmount,
+        dispatch
+      );
+      setToken1TransferAmount(0);
+    } else {
+      transferTokens(
+        provider,
+        exchange,
+        "Withdrawal",
+        token,
+        token2TransferAmount,
+        dispatch
+      );
+      setToken2TransferAmount(0);
     }
   };
 
@@ -75,7 +104,14 @@ const Balance = () => {
     if (exchange && tokens[0] && tokens[1] && account) {
       loadBalances(exchange, tokens, account, dispatch);
     }
-  }, [exchange, tokens, account, dispatch, depositInProgress]);
+  }, [
+    exchange,
+    tokens,
+    account,
+    dispatch,
+    depositInProgress,
+    withdrawInProgress,
+  ]);
 
   return (
     <div className="component exchange__transfers">
@@ -117,13 +153,19 @@ const Balance = () => {
           </p>
         </div>
 
-        <form onSubmit={(e) => depositHandler(e, tokens[0])}>
+        <form
+          onSubmit={
+            isDeposit
+              ? (e) => depositHandler(e, tokens[0])
+              : (e) => withdrawHandler(e, tokens[0])
+          }
+        >
           <label htmlFor="token0">{symbols && symbols[0]} Amount</label>
           <input
             type="text"
             id="token0"
             placeholder="0.0000"
-            value={token1DepositAmount === 0 ? "" : token1DepositAmount}
+            value={token1TransferAmount === 0 ? "" : token1TransferAmount}
             onChange={(e) => amountHandler(e, tokens[0])}
           />
 
@@ -162,13 +204,19 @@ const Balance = () => {
           </p>
         </div>
 
-        <form onSubmit={(e) => depositHandler(e, tokens[1])}>
+        <form
+          onSubmit={
+            isDeposit
+              ? (e) => depositHandler(e, tokens[1])
+              : (e) => withdrawHandler(e, tokens[1])
+          }
+        >
           <label htmlFor="token1">{symbols && symbols[1]} Amount</label>
           <input
             type="text"
             id="token1"
             placeholder="0.0000"
-            value={token2DepositAmount === 0 ? "" : token2DepositAmount}
+            value={token2TransferAmount === 0 ? "" : token2TransferAmount}
             onChange={(e) => amountHandler(e, tokens[1])}
           />
 

@@ -20,7 +20,11 @@ import {
   depositRequest,
   depositSuccess,
   depositFail,
+  withdrawRequest,
+  withdrawSuccess,
+  withdrawFail,
 } from "./reducers/exchange";
+import { TransactionTypes } from "ethers/lib/utils";
 
 export const loadProvider = (dispatch) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -84,6 +88,10 @@ export const subscribeToEvents = (exchange, dispatch) => {
   exchange.on("Deposit", (token, user, amount, balance, event) => {
     dispatch(depositSuccess(event));
   });
+
+  exchange.on("Withdrawal", (token, user, amount, balance, event) => {
+    dispatch(withdrawSuccess(event));
+  });
 };
 
 export const loadBalances = async (exchange, tokens, account, dispatch) => {
@@ -118,7 +126,7 @@ export const loadBalances = async (exchange, tokens, account, dispatch) => {
   }
 };
 
-export const depositTokens = async (
+export const transferTokens = async (
   provider,
   exchange,
   transferType,
@@ -127,21 +135,32 @@ export const depositTokens = async (
   dispatch
 ) => {
   try {
-    dispatch(depositRequest());
     const signer = await provider.getSigner();
     const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18);
     let transaction;
-
-    transaction = await token
-      .connect(signer)
-      .approve(exchange.address, amountToTransfer);
-    await transaction.wait();
-    transaction = await exchange
-      .connect(signer)
-      .depositToken(token.address, amountToTransfer);
-    await transaction.wait();
+    if (transferType === "Deposit") {
+      dispatch(depositRequest());
+      transaction = await token
+        .connect(signer)
+        .approve(exchange.address, amountToTransfer);
+      await transaction.wait();
+      transaction = await exchange
+        .connect(signer)
+        .depositToken(token.address, amountToTransfer);
+      await transaction.wait();
+    } else {
+      dispatch(withdrawRequest());
+      transaction = await exchange
+        .connect(signer)
+        .withdrawToken(token.address, amountToTransfer);
+      await transaction.wait();
+    }
   } catch (error) {
-    dispatch(depositFail());
+    if (transferType === "Deposit") {
+      dispatch(depositFail());
+    } else {
+      dispatch(withdrawFail());
+    }
   }
 };
 
