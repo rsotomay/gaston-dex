@@ -23,6 +23,12 @@ import {
   withdrawRequest,
   withdrawSuccess,
   withdrawFail,
+  buyOrderRequest,
+  buyOrderSuccess,
+  buyOrderFail,
+  sellOrderRequest,
+  sellOrderSuccess,
+  sellOrderFail,
 } from "./reducers/exchange";
 import { TransactionTypes } from "ethers/lib/utils";
 
@@ -92,6 +98,13 @@ export const subscribeToEvents = (exchange, dispatch) => {
   exchange.on("Withdrawal", (token, user, amount, balance, event) => {
     dispatch(withdrawSuccess(event));
   });
+
+  exchange.on(
+    "Order",
+    (Id, user, tokeGet, amountGet, tokenGive, amountGive, timestamp, event) => {
+      dispatch(buyOrderSuccess(event));
+    }
+  );
 };
 
 export const loadBalances = async (exchange, tokens, account, dispatch) => {
@@ -161,6 +174,33 @@ export const transferTokens = async (
     } else {
       dispatch(withdrawFail());
     }
+  }
+};
+
+export const makeOrder = async (
+  provider,
+  exchange,
+  tokens,
+  order,
+  dispatch
+) => {
+  const tokenGet = tokens[0].address;
+  const amountGet = ethers.utils.parseUnits(order.amount.toString(), 18);
+  const tokenGive = tokens[1].address;
+  const amountGive = ethers.utils.parseUnits(
+    (order.amount * order.price).toString(),
+    18
+  );
+
+  try {
+    const signer = await provider.getSigner();
+    dispatch(buyOrderRequest());
+    const transaction = await exchange
+      .connect(signer)
+      .makeOrder(tokenGet, amountGet, tokenGive, amountGive);
+    await transaction.wait();
+  } catch (error) {
+    dispatch(buyOrderFail());
   }
 };
 

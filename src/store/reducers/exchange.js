@@ -15,7 +15,20 @@ export const exchange = createSlice({
       withdrawSuccessful: false,
       transferType: null,
     },
-
+    buying: {
+      buyOrderInProgress: false,
+      buyOrderSuccessful: false,
+      transactionType: null,
+    },
+    selling: {
+      sellOrderInProgress: false,
+      sellOrderSuccessful: false,
+      transactionType: null,
+    },
+    allOrders: {
+      loaded: false,
+      data: [],
+    },
     events: [],
   },
   reducers: {
@@ -62,6 +75,41 @@ export const exchange = createSlice({
       state.withdrawing.transferType = action.type;
       state.withdrawing.isError = true;
     },
+    buyOrderRequest: (state, action) => {
+      state.buying.buyOrderInProgress = true;
+      state.buying.buyOrderSuccessful = false;
+      state.buying.transactionType = action.type;
+    },
+    buyOrderSuccess: (state, action) => {
+      state.buying.buyOrderInProgress = false;
+      state.buying.buyOrderSuccessful = true;
+      state.buying.transactionType = action.type;
+      state.buying.events = action.payload;
+      state.buying.allOrders = action.order;
+    },
+    buyOrderFail: (state, action) => {
+      state.buying.buyOrderInProgress = false;
+      state.buying.buyOrderSuccessful = false;
+      state.buying.transactionType = action.type;
+      state.buying.isError = true;
+    },
+    sellOrderRequest: (state, action) => {
+      state.selling.sellOrderInProgress = true;
+      state.selling.sellOrderSuccessful = false;
+      state.selling.transactionType = action.type;
+    },
+    sellOrderSuccess: (state, action) => {
+      state.selling.sellOrderInProgress = false;
+      state.selling.sellOrderSuccessful = true;
+      state.selling.transactionType = action.type;
+      state.selling.events = action.payload;
+    },
+    sellOrderFail: (state, action) => {
+      state.selling.sellOrderInProgress = false;
+      state.selling.sellOrderSuccessful = false;
+      state.selling.transactionType = action.type;
+      state.selling.isError = true;
+    },
   },
 });
 
@@ -74,6 +122,12 @@ export const {
   withdrawRequest,
   withdrawSuccess,
   withdrawFail,
+  buyOrderRequest,
+  buyOrderSuccess,
+  buyOrderFail,
+  sellOrderRequest,
+  sellOrderSuccess,
+  sellOrderFail,
 } = exchange.actions;
 
 export default exchange.reducer;
