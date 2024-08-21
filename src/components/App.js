@@ -9,6 +9,7 @@ import {
   loadTokens,
   loadExchange,
   subscribeToEvents,
+  loadAllOrders,
 } from "../store/interactions";
 
 import Navbar from "./Navbar.js";
@@ -40,6 +41,8 @@ function App() {
     const exchange = await loadExchange(provider, chainId, dispatch);
     //Listen to events
     subscribeToEvents(exchange, dispatch);
+    // //load all Orders
+    // loadAllOrders(provider, exchange, dispatch);
   };
 
   useEffect(() => {

@@ -5,6 +5,7 @@ export const exchange = createSlice({
   initialState: {
     contract: null,
     balances: [0, 0],
+    orders: [],
     depositing: {
       depositInProgress: false,
       depositSuccessful: false,
@@ -25,10 +26,6 @@ export const exchange = createSlice({
       sellOrderSuccessful: false,
       transactionType: null,
     },
-    allOrders: {
-      loaded: false,
-      data: [],
-    },
     events: [],
   },
   reducers: {
@@ -38,6 +35,10 @@ export const exchange = createSlice({
     //Balances
     exchangeBalancesLoaded: (state, action) => {
       state.balances = action.payload;
+    },
+    // Orders
+    ordersLoaded: (state, action) => {
+      state.orders = action.payload;
     },
     // Deposits
     depositRequest: (state, action) => {
@@ -84,8 +85,9 @@ export const exchange = createSlice({
       state.buying.buyOrderInProgress = false;
       state.buying.buyOrderSuccessful = true;
       state.buying.transactionType = action.type;
-      state.buying.events = action.payload;
-      state.buying.allOrders = action.order;
+      state.events = action.payload;
+      // state.orders.loaded = false;
+      // state.orders.data = [...state.orders.data, action.orders];
     },
     buyOrderFail: (state, action) => {
       state.buying.buyOrderInProgress = false;
@@ -116,6 +118,7 @@ export const exchange = createSlice({
 export const {
   setExchange,
   exchangeBalancesLoaded,
+  ordersLoaded,
   depositRequest,
   depositSuccess,
   depositFail,

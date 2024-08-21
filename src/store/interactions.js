@@ -17,6 +17,7 @@ import {
 import {
   setExchange,
   exchangeBalancesLoaded,
+  ordersLoaded,
   depositRequest,
   depositSuccess,
   depositFail,
@@ -202,6 +203,17 @@ export const makeOrder = async (
   } catch (error) {
     dispatch(buyOrderFail());
   }
+};
+
+export const loadAllOrders = async (provider, exchange, dispatch) => {
+  const block = await provider.getBlockNumber();
+
+  const allOrderStream = await exchange.queryFilter("Order", 0, block);
+  const allOrders = allOrderStream.map((event) => {
+    return { hash: event.transactionHash, args: event.args };
+  });
+
+  dispatch(ordersLoaded(allOrders));
 };
 
 // export const loadProvider = (dispatch) => {
