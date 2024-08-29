@@ -18,11 +18,8 @@ const Balance = () => {
   const tokenBalances = useSelector((state) => state.tokens.balances);
   const exchangeBalances = useSelector((state) => state.exchange.balances);
   // To reload the componenet if state of isDepositing changes and it's called in useEffect's array of variables
-  const depositInProgress = useSelector(
-    (state) => state.exchange.depositing.depositInProgress
-  );
-  const withdrawInProgress = useSelector(
-    (state) => state.exchange.withdrawing.withdrawInProgress
+  const transferInProgress = useSelector(
+    (state) => state.exchange.transfering.transferInProgress
   );
 
   const depositRef = useRef(null);
@@ -104,14 +101,7 @@ const Balance = () => {
     if (exchange && tokens[0] && tokens[1] && account) {
       loadBalances(exchange, tokens, account, dispatch);
     }
-  }, [
-    exchange,
-    tokens,
-    account,
-    dispatch,
-    depositInProgress,
-    withdrawInProgress,
-  ]);
+  }, [exchange, tokens, account, dispatch, transferInProgress]);
 
   return (
     <div className="component exchange__transfers">

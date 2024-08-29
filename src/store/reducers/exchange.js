@@ -5,15 +5,9 @@ export const exchange = createSlice({
   initialState: {
     contract: null,
     balances: [0, 0],
-    orders: [],
-    depositing: {
-      depositInProgress: false,
-      depositSuccessful: false,
-      transferType: null,
-    },
-    withdrawing: {
-      withdrawInProgress: false,
-      withdrawSuccessful: false,
+    transfering: {
+      transferInProgress: false,
+      transferSuccessful: false,
       transferType: null,
     },
     buying: {
@@ -26,6 +20,9 @@ export const exchange = createSlice({
       sellOrderSuccessful: false,
       transactionType: null,
     },
+
+    allOrders: [],
+
     events: [],
   },
   reducers: {
@@ -38,44 +35,27 @@ export const exchange = createSlice({
     },
     // Orders
     ordersLoaded: (state, action) => {
-      state.orders = action.payload;
+      state.allOrders = action.payload;
     },
-    // Deposits
-    depositRequest: (state, action) => {
-      state.depositing.depositInProgress = true;
-      state.depositing.depositSuccessful = false;
-      state.depositing.transferType = action.type;
+    // Deposits & Withdrawals
+    transferRequest: (state, action) => {
+      state.transfering.transferInProgress = true;
+      state.transfering.transferSuccessful = false;
+      state.transfering.transferType = action.type;
     },
-    depositSuccess: (state, action) => {
-      state.depositing.depositInProgress = false;
-      state.depositing.depositSuccessful = true;
-      state.depositing.transferType = action.type;
-      state.depositing.events = action.payload;
+    transferSuccess: (state, action) => {
+      state.transfering.transferInProgress = false;
+      state.transfering.transferSuccessful = true;
+      state.transfering.transferType = action.payload.event;
+      state.events = [action.payload];
     },
-    depositFail: (state, action) => {
-      state.depositing.depositInProgress = false;
-      state.depositing.depositSuccessful = false;
-      state.depositing.transferType = action.type;
-      state.depositing.isError = true;
+    transferFail: (state, action) => {
+      state.transfering.transferInProgress = false;
+      state.transfering.transferSuccessful = false;
+      state.transfering.transferType = action.type;
+      state.transfering.isError = true;
     },
-    // Withdraws
-    withdrawRequest: (state, action) => {
-      state.withdrawing.withdrawInProgress = true;
-      state.withdrawing.withdrawSuccessful = false;
-      state.withdrawing.transferType = action.type;
-    },
-    withdrawSuccess: (state, action) => {
-      state.withdrawing.withdrawInProgress = false;
-      state.withdrawing.withdrawSuccessful = true;
-      state.withdrawing.transferType = action.type;
-      state.withdrawing.events = action.payload;
-    },
-    withdrawFail: (state, action) => {
-      state.withdrawing.withdrawInProgress = false;
-      state.withdrawing.withdrawSuccessful = false;
-      state.withdrawing.transferType = action.type;
-      state.withdrawing.isError = true;
-    },
+    // Buy Orders
     buyOrderRequest: (state, action) => {
       state.buying.buyOrderInProgress = true;
       state.buying.buyOrderSuccessful = false;
@@ -85,9 +65,8 @@ export const exchange = createSlice({
       state.buying.buyOrderInProgress = false;
       state.buying.buyOrderSuccessful = true;
       state.buying.transactionType = action.type;
+      state.allOrders = [action.payload.args];
       state.events = action.payload;
-      // state.orders.loaded = false;
-      // state.orders.data = [...state.orders.data, action.orders];
     },
     buyOrderFail: (state, action) => {
       state.buying.buyOrderInProgress = false;
@@ -104,6 +83,7 @@ export const exchange = createSlice({
       state.selling.sellOrderInProgress = false;
       state.selling.sellOrderSuccessful = true;
       state.selling.transactionType = action.type;
+      state.allOrders = [action.payload.args];
       state.selling.events = action.payload;
     },
     sellOrderFail: (state, action) => {
@@ -119,12 +99,9 @@ export const {
   setExchange,
   exchangeBalancesLoaded,
   ordersLoaded,
-  depositRequest,
-  depositSuccess,
-  depositFail,
-  withdrawRequest,
-  withdrawSuccess,
-  withdrawFail,
+  transferRequest,
+  transferSuccess,
+  transferFail,
   buyOrderRequest,
   buyOrderSuccess,
   buyOrderFail,

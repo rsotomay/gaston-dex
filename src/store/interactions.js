@@ -18,12 +18,9 @@ import {
   setExchange,
   exchangeBalancesLoaded,
   ordersLoaded,
-  depositRequest,
-  depositSuccess,
-  depositFail,
-  withdrawRequest,
-  withdrawSuccess,
-  withdrawFail,
+  transferRequest,
+  transferSuccess,
+  transferFail,
   buyOrderRequest,
   buyOrderSuccess,
   buyOrderFail,
@@ -93,11 +90,11 @@ export const loadExchange = async (provider, chainId, dispatch) => {
 
 export const subscribeToEvents = (exchange, dispatch) => {
   exchange.on("Deposit", (token, user, amount, balance, event) => {
-    dispatch(depositSuccess(event));
+    dispatch(transferSuccess(event));
   });
 
   exchange.on("Withdrawal", (token, user, amount, balance, event) => {
-    dispatch(withdrawSuccess(event));
+    dispatch(transferSuccess(event));
   });
 
   exchange.on(
@@ -153,7 +150,7 @@ export const transferTokens = async (
     const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18);
     let transaction;
     if (transferType === "Deposit") {
-      dispatch(depositRequest());
+      dispatch(transferRequest());
       transaction = await token
         .connect(signer)
         .approve(exchange.address, amountToTransfer);
@@ -163,18 +160,14 @@ export const transferTokens = async (
         .depositToken(token.address, amountToTransfer);
       await transaction.wait();
     } else {
-      dispatch(withdrawRequest());
+      dispatch(transferRequest());
       transaction = await exchange
         .connect(signer)
         .withdrawToken(token.address, amountToTransfer);
       await transaction.wait();
     }
   } catch (error) {
-    if (transferType === "Deposit") {
-      dispatch(depositFail());
-    } else {
-      dispatch(withdrawFail());
-    }
+    dispatch(transferFail());
   }
 };
 
@@ -208,12 +201,10 @@ export const makeOrder = async (
 export const loadAllOrders = async (provider, exchange, dispatch) => {
   const block = await provider.getBlockNumber();
 
-  const allOrderStream = await exchange.queryFilter("Order", 0, block);
-  const allOrders = allOrderStream.map((event) => {
-    return { hash: event.transactionHash, args: event.args };
-  });
+  const orderStream = await exchange.queryFilter("Order", 0, block);
+  const orders = orderStream.map((event) => event.args);
 
-  dispatch(ordersLoaded(allOrders));
+  dispatch(ordersLoaded(orders));
 };
 
 // export const loadProvider = (dispatch) => {
