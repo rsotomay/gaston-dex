@@ -8,14 +8,15 @@ import {
   loadAccount,
   loadTokens,
   loadExchange,
-  subscribeToEvents,
   loadAllOrders,
+  subscribeToEvents,
 } from "../store/interactions";
 
 import Navbar from "./Navbar.js";
 import Markets from "./Markets.js";
 import Balance from "./Balance.js";
 import Order from "./Order.js";
+import OrderBook from "./OrderBook.js";
 
 function App() {
   const dispatch = useDispatch();
@@ -39,10 +40,10 @@ function App() {
     await loadTokens(provider, [gstn.address, mETH.address], dispatch);
     // // Load exchange contract
     const exchange = await loadExchange(provider, chainId, dispatch);
+    //Fetch all orders
+    loadAllOrders(provider, exchange, dispatch);
     //Listen to events
     subscribeToEvents(exchange, dispatch);
-    // //load all Orders
-    // loadAllOrders(provider, exchange, dispatch);
   };
 
   useEffect(() => {
@@ -68,7 +69,7 @@ function App() {
 
           {/* Trades */}
 
-          {/* OrderBook */}
+          <OrderBook />
         </section>
       </main>
 

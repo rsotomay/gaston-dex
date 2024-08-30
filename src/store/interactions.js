@@ -21,14 +21,10 @@ import {
   transferRequest,
   transferSuccess,
   transferFail,
-  buyOrderRequest,
-  buyOrderSuccess,
-  buyOrderFail,
-  sellOrderRequest,
-  sellOrderSuccess,
-  sellOrderFail,
+  orderRequest,
+  orderSuccess,
+  orderFail,
 } from "./reducers/exchange";
-import { TransactionTypes } from "ethers/lib/utils";
 
 export const loadProvider = (dispatch) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -99,12 +95,21 @@ export const subscribeToEvents = (exchange, dispatch) => {
 
   exchange.on(
     "Order",
-    (Id, user, tokeGet, amountGet, tokenGive, amountGive, timestamp, event) => {
-      dispatch(buyOrderSuccess(event));
+    (
+      id,
+      user,
+      tokenGet,
+      amountGet,
+      tokenGive,
+      amountGive,
+      timestamp,
+      event
+    ) => {
+      const order = event.args;
+      dispatch(orderSuccess(order, event));
     }
   );
 };
-
 export const loadBalances = async (exchange, tokens, account, dispatch) => {
   try {
     const token_1_Balance = await tokens[0].balanceOf(account);
@@ -135,6 +140,15 @@ export const loadBalances = async (exchange, tokens, account, dispatch) => {
     console.error("Failed to load balance:", error);
     throw error;
   }
+};
+
+export const loadAllOrders = async (provider, exchange, dispatch) => {
+  const block = await provider.getBlockNumber();
+
+  const orderStream = await exchange.queryFilter("Order", 0, block);
+  const allOrders = orderStream.map((event) => event.args);
+
+  dispatch(ordersLoaded(allOrders));
 };
 
 export const transferTokens = async (
@@ -171,7 +185,7 @@ export const transferTokens = async (
   }
 };
 
-export const makeOrder = async (
+export const makeBuyOrder = async (
   provider,
   exchange,
   tokens,
@@ -185,26 +199,44 @@ export const makeOrder = async (
     (order.amount * order.price).toString(),
     18
   );
+  dispatch(orderRequest());
 
   try {
     const signer = await provider.getSigner();
-    dispatch(buyOrderRequest());
     const transaction = await exchange
       .connect(signer)
       .makeOrder(tokenGet, amountGet, tokenGive, amountGive);
     await transaction.wait();
   } catch (error) {
-    dispatch(buyOrderFail());
+    dispatch(orderFail());
   }
 };
 
-export const loadAllOrders = async (provider, exchange, dispatch) => {
-  const block = await provider.getBlockNumber();
+export const makeSellOrder = async (
+  provider,
+  exchange,
+  tokens,
+  order,
+  dispatch
+) => {
+  const tokenGet = tokens[1].address;
+  const amountGet = ethers.utils.parseUnits(
+    (order.amount * order.price).toString(),
+    18
+  );
+  const tokenGive = tokens[0].address;
+  const amountGive = ethers.utils.parseUnits(order.amount.toString(), 18);
+  dispatch(orderRequest());
 
-  const orderStream = await exchange.queryFilter("Order", 0, block);
-  const orders = orderStream.map((event) => event.args);
-
-  dispatch(ordersLoaded(orders));
+  try {
+    const signer = await provider.getSigner();
+    const transaction = await exchange
+      .connect(signer)
+      .makeOrder(tokenGet, amountGet, tokenGive, amountGive);
+    await transaction.wait();
+  } catch (error) {
+    dispatch(orderFail());
+  }
 };
 
 // export const loadProvider = (dispatch) => {

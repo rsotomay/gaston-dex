@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { makeOrder, loadAllOrders } from "../store/interactions";
+import { makeBuyOrder, makeSellOrder } from "../store/interactions";
 
 const Order = () => {
   const [isBuy, setIsBuy] = useState(true);
@@ -11,9 +11,6 @@ const Order = () => {
   const provider = useSelector((state) => state.provider.connection);
   const exchange = useSelector((state) => state.exchange.contract);
   const tokens = useSelector((state) => state.tokens.contracts);
-  const buyInProgress = useSelector(
-    (state) => state.exchange.buying.buyOrderInProgress
-  );
 
   const dispatch = useDispatch();
 
@@ -34,22 +31,16 @@ const Order = () => {
 
   const buyHandler = (e) => {
     e.preventDefault();
-    makeOrder(provider, exchange, tokens, { amount, price }, dispatch);
+    makeBuyOrder(provider, exchange, tokens, { amount, price }, dispatch);
     setAmount(0);
     setPrice(0);
   };
   const sellHandler = (e) => {
     e.preventDefault();
-    console.log("sellHandler...");
+    makeSellOrder(provider, exchange, tokens, { amount, price }, dispatch);
     setAmount(0);
     setPrice(0);
   };
-
-  useEffect(() => {
-    if (provider && exchange && dispatch) {
-      loadAllOrders(provider, exchange, dispatch);
-    }
-  }, [provider, exchange, dispatch, buyInProgress]);
 
   return (
     <div className="component exchange__orders">
