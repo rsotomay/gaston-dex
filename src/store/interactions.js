@@ -17,6 +17,8 @@ import {
 import {
   setExchange,
   exchangeBalancesLoaded,
+  cancelledOrdersLoaded,
+  filledOrdersLoaded,
   ordersLoaded,
   transferRequest,
   transferSuccess,
@@ -145,6 +147,19 @@ export const loadBalances = async (exchange, tokens, account, dispatch) => {
 export const loadAllOrders = async (provider, exchange, dispatch) => {
   const block = await provider.getBlockNumber();
 
+  //Fetch calcelled orders
+  const cancelStream = await exchange.queryFilter("Cancel", 0, block);
+  const cancelledOrders = cancelStream.map((event) => event.args);
+
+  dispatch(cancelledOrdersLoaded(cancelledOrders));
+
+  //Fetch filled orders
+  const fillStream = await exchange.queryFilter("Trade", 0, block);
+  const filledOrders = fillStream.map((event) => event.args);
+
+  dispatch(filledOrdersLoaded(filledOrders));
+
+  //Fetch all orders
   const orderStream = await exchange.queryFilter("Order", 0, block);
   const allOrders = orderStream.map((event) => event.args);
 

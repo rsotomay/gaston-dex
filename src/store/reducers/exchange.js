@@ -15,7 +15,14 @@ export const exchange = createSlice({
       orderSuccessful: false,
       transactionType: null,
     },
-
+    cancelledOrders: {
+      loaded: false,
+      data: [],
+    },
+    filledOrders: {
+      loaded: false,
+      data: [],
+    },
     allOrders: {
       loaded: false,
       data: [],
@@ -29,6 +36,16 @@ export const exchange = createSlice({
     //Balances
     exchangeBalancesLoaded: (state, action) => {
       state.balances = action.payload;
+    },
+    //Cancelled Orders
+    cancelledOrdersLoaded: (state, action) => {
+      state.cancelledOrders.loaded = true;
+      state.cancelledOrders.data = action.payload;
+    },
+    //Filled Orders
+    filledOrdersLoaded: (state, action) => {
+      state.filledOrders.loaded = true;
+      state.filledOrders.data = action.payload;
     },
     // Orders
     ordersLoaded: (state, action) => {
@@ -87,6 +104,8 @@ export const exchange = createSlice({
 export const {
   setExchange,
   exchangeBalancesLoaded,
+  cancelledOrdersLoaded,
+  filledOrdersLoaded,
   ordersLoaded,
   transferRequest,
   transferSuccess,

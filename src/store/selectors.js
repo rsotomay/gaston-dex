@@ -1,14 +1,67 @@
 import { createSelector } from "reselect";
-import { get } from "lodash";
+import { get, groupBy, reject } from "lodash";
+import moment from "moment";
+import { ethers } from "ethers";
+
+const GREEN = "#25CE8F";
+const RED = "#F45353";
 
 const tokens = (state) => get(state, "tokens.contracts");
 const allOrders = (state) => get(state, "exchange.allOrders.data", []);
+const cancelledOrders = (state) =>
+  get(state, "exchange.cancelledOrders.data", []);
+const filledOrders = (state) => get(state, "exchange.filledOrders.data", []);
+
+const openOrders = (state) => {
+  const all = allOrders(state);
+  const filled = filledOrders(state);
+  const cancelled = cancelledOrders(state);
+  //Remove (reject) filled and cancelled orders and returns only open orders
+  const openOrders = reject(all, (order) => {
+    const orderFilled = filled.some(
+      (o) => o.id.toString() === order.id.toString()
+    );
+    const orderCancelled = cancelled.some(
+      (o) => o.id.toString() === order.id.toString()
+    );
+
+    return orderFilled || orderCancelled;
+  });
+  return openOrders;
+};
+
+const decorateOrder = (order, tokens) => {
+  let token0Amount, token1Amount;
+
+  //Note: GSTN should be consider token0, mETH is consider token1
+  //Example: Giving mETH in exchange for GSTN
+  if (order.tokenGive === tokens[1].address) {
+    token0Amount = order.amountGive; // The amount of GSTN we are giving
+    token1Amount = order.amountGet; // The amount of mETH we want...
+  } else {
+    token0Amount = order.amountGet; // The amount of GSTN we want
+    token1Amount = order.amountGive; // The amount of mETH we are giving..
+  }
+
+  //Calculate token price to 5 decimal places
+  const precision = 100000;
+  let tokenPrice = token1Amount / token0Amount;
+  tokenPrice = Math.round(tokenPrice * precision) / precision;
+
+  return {
+    ...order,
+    token0Amount: ethers.utils.formatUnits(token0Amount),
+    token1Amount: ethers.utils.formatUnits(token1Amount),
+    tokenPrice,
+    formattedTimestamp: moment.unix(order.timestamp).format("h:mm:ssa d MMM D"),
+  };
+};
 
 // ----------------------------------------------------------------------------------------
 //Order Book
 
 export const orderBookSelector = createSelector(
-  allOrders,
+  openOrders,
   tokens,
   (orders, tokens) => {
     if (!tokens[0] || !tokens[1]) {
@@ -23,5 +76,48 @@ export const orderBookSelector = createSelector(
       (o) =>
         o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address
     );
+    //Decorate Orders
+    orders = decorateOrderBookOrders(orders, tokens);
+
+    //Group orders in separate arrays by 'orderType' buy and sell
+    orders = groupBy(orders, "orderType");
+
+    //Fetch buy orders first in order to sort them. (with an empty array in case no orders)
+    const buyOrders = get(orders, "buy", []);
+
+    //Sort buy orders by token price
+    orders = {
+      ...orders,
+      buyOrders: buyOrders.sort((a, b) => b.tokenPrice - a.tokenPrice),
+    };
+
+    //Fetch sell orders first in order to sort them. (with an empty array in case no orders)
+    const sellOrders = get(orders, "sell", []);
+
+    //Sort sell orders by token price
+    orders = {
+      ...orders,
+      sellOrders: sellOrders.sort((a, b) => b.tokenPrice - a.tokenPrice),
+    };
+    return orders;
   }
 );
+
+const decorateOrderBookOrders = (orders, tokens) => {
+  return orders.map((order) => {
+    order = decorateOrder(order, tokens);
+    order = decorateOrderBookOrder(order, tokens);
+    return order;
+  });
+};
+
+const decorateOrderBookOrder = (order, tokens) => {
+  const orderType = order.tokenGive === tokens[1].address ? "buy" : "sell";
+
+  return {
+    ...order,
+    orderType,
+    orderTypeClass: orderType === "buy" ? GREEN : RED,
+    orderFillAction: orderType === "buy" ? "sell" : "buy",
+  };
+};
