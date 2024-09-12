@@ -15,6 +15,11 @@ export const exchange = createSlice({
       orderSuccessful: false,
       transactionType: null,
     },
+    cancelling: {
+      cancelInProgress: false,
+      cancelSuccessful: false,
+      transactionType: null,
+    },
     cancelledOrders: {
       loaded: false,
       data: [],
@@ -78,7 +83,7 @@ export const exchange = createSlice({
     },
     orderSuccess: (state, action) => {
       let index = state.allOrders.data.findIndex(
-        (order) => order.id.toString() === action.order.id.toString()
+        (order) => order.id.toString() === action.payload.id.toString()
       );
       let data;
       if (index === -1) {
@@ -98,6 +103,28 @@ export const exchange = createSlice({
       state.ordering.transactionType = action.type;
       state.ordering.isError = true;
     },
+    // Cancelling
+    cancelRequest: (state, action) => {
+      state.cancelling.cancelInProgress = true;
+      state.cancelling.cancelSuccessful = false;
+      state.cancelling.transactionType = action.type;
+    },
+    cancelSuccess: (state, action) => {
+      state.cancelling.cancelInProgress = false;
+      state.cancelling.cancelSuccessful = true;
+      state.cancelling.transactionType = action.type;
+      state.cancelledOrders.data = [
+        ...state.cancelledOrders.data,
+        action.payload,
+      ];
+      state.events = action.payload;
+    },
+    cancelFail: (state, action) => {
+      state.cancelling.cancelInProgress = false;
+      state.cancelling.cancelSuccessful = false;
+      state.cancelling.transactionType = action.type;
+      state.cancelling.isError = true;
+    },
   },
 });
 
@@ -113,6 +140,9 @@ export const {
   orderRequest,
   orderSuccess,
   orderFail,
+  cancelRequest,
+  cancelSuccess,
+  cancelFail,
 } = exchange.actions;
 
 export default exchange.reducer;
