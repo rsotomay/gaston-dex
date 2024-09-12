@@ -89,7 +89,7 @@ const Transactions = () => {
                         <td>{order.tokenPrice}</td>
                         <td>
                           <button
-                            onClick={(o) => cancelHandler(order)}
+                            onClick={() => cancelHandler(order)}
                             className="button--sm"
                           >
                             Cancel

@@ -20,6 +20,11 @@ export const exchange = createSlice({
       cancelSuccessful: false,
       transactionType: null,
     },
+    filling: {
+      fillInProgress: false,
+      fillSuccessful: false,
+      transactionType: null,
+    },
     cancelledOrders: {
       loaded: false,
       data: [],
@@ -82,6 +87,7 @@ export const exchange = createSlice({
       state.ordering.transactionType = action.type;
     },
     orderSuccess: (state, action) => {
+      //Prevents duplicate order id's
       let index = state.allOrders.data.findIndex(
         (order) => order.id.toString() === action.payload.id.toString()
       );
@@ -125,6 +131,35 @@ export const exchange = createSlice({
       state.cancelling.transactionType = action.type;
       state.cancelling.isError = true;
     },
+    // Filling
+    fillRequest: (state, action) => {
+      state.filling.fillInProgress = true;
+      state.filling.fillSuccessful = false;
+      state.filling.transactionType = action.type;
+    },
+    fillSuccess: (state, action) => {
+      //Prevents duplicate order id's
+      let index = state.filledOrders.data.findIndex(
+        (order) => order.id.toString() === action.payload.id.toString()
+      );
+      let data;
+      if (index === -1) {
+        data = [...state.filledOrders.data, action.payload];
+      } else {
+        data = state.filledOrders.data;
+      }
+      state.filling.fillInProgress = false;
+      state.filling.fillSuccessful = true;
+      state.filling.transactionType = action.type;
+      state.filledOrders.data = data;
+      state.events = action.payload;
+    },
+    fillFail: (state, action) => {
+      state.filling.fillInProgress = false;
+      state.filling.fillSuccessful = false;
+      state.filling.transactionType = action.type;
+      state.filling.isError = true;
+    },
   },
 });
 
@@ -143,6 +178,9 @@ export const {
   cancelRequest,
   cancelSuccess,
   cancelFail,
+  fillRequest,
+  fillSuccess,
+  fillFail,
 } = exchange.actions;
 
 export default exchange.reducer;

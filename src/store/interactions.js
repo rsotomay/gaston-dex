@@ -29,6 +29,9 @@ import {
   cancelRequest,
   cancelSuccess,
   cancelFail,
+  fillRequest,
+  fillSuccess,
+  fillFail,
 } from "./reducers/exchange";
 
 export const loadProvider = (dispatch) => {
@@ -129,6 +132,24 @@ export const subscribeToEvents = (exchange, dispatch) => {
     ) => {
       const order = event.args;
       dispatch(cancelSuccess(order, event));
+    }
+  );
+
+  exchange.on(
+    "Trade",
+    (
+      id,
+      user,
+      tokenGet,
+      amountGet,
+      tokenGive,
+      amountGive,
+      timestamp,
+      creator,
+      event
+    ) => {
+      const order = event.args;
+      dispatch(fillSuccess(order, event));
     }
   );
 };
@@ -283,5 +304,17 @@ export const cancelOrder = async (provider, exchange, order, dispatch) => {
     await transaction.wait();
   } catch (error) {
     dispatch(cancelFail());
+  }
+};
+
+export const fillOrder = async (provider, exchange, order, dispatch) => {
+  dispatch(fillRequest());
+
+  try {
+    const signer = await provider.getSigner();
+    const transaction = await exchange.connect(signer).fillOrder(order.id);
+    await transaction.wait();
+  } catch (error) {
+    dispatch(fillFail());
   }
 };
