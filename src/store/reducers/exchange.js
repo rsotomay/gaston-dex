@@ -72,7 +72,7 @@ export const exchange = createSlice({
       state.transfering.transferInProgress = false;
       state.transfering.transferSuccessful = true;
       state.transfering.transferType = action.payload.event;
-      state.events = action.payload;
+      state.events = [action.payload, ...state.events];
     },
     transferFail: (state, action) => {
       state.transfering.transferInProgress = false;
@@ -100,7 +100,7 @@ export const exchange = createSlice({
       state.ordering.orderInProgress = false;
       state.ordering.orderSuccessful = true;
       state.ordering.transactionType = action.type;
-      state.events = action.payload;
+      state.events = [action.payload, ...state.events];
       state.allOrders.data = data;
     },
     orderFail: (state, action) => {
@@ -123,7 +123,7 @@ export const exchange = createSlice({
         ...state.cancelledOrders.data,
         action.payload,
       ];
-      state.events = action.payload;
+      state.events = [action.payload, ...state.events];
     },
     cancelFail: (state, action) => {
       state.cancelling.cancelInProgress = false;
@@ -152,7 +152,7 @@ export const exchange = createSlice({
       state.filling.fillSuccessful = true;
       state.filling.transactionType = action.type;
       state.filledOrders.data = data;
-      state.events = action.payload;
+      state.events = [action.payload, ...state.events];
     },
     fillFail: (state, action) => {
       state.filling.fillInProgress = false;

@@ -188,7 +188,7 @@ export const loadBalances = async (exchange, tokens, account, dispatch) => {
 export const loadAllOrders = async (provider, exchange, dispatch) => {
   const block = await provider.getBlockNumber();
 
-  //Fetch calcelled orders
+  //Fetch cancelled orders
   const cancelStream = await exchange.queryFilter("Cancel", 0, block);
   const cancelledOrders = cancelStream.map((event) => event.args);
 
@@ -249,12 +249,12 @@ export const makeBuyOrder = async (
   dispatch
 ) => {
   const tokenGet = tokens[0].address;
-  const amountGet = ethers.utils.parseUnits(order.amount.toString(), 18);
-  const tokenGive = tokens[1].address;
-  const amountGive = ethers.utils.parseUnits(
+  const amountGet = ethers.utils.parseUnits(
     (order.amount * order.price).toString(),
     18
   );
+  const tokenGive = tokens[1].address;
+  const amountGive = ethers.utils.parseUnits(order.amount.toString(), 18);
   dispatch(orderRequest());
 
   try {
@@ -276,12 +276,12 @@ export const makeSellOrder = async (
   dispatch
 ) => {
   const tokenGet = tokens[1].address;
-  const amountGet = ethers.utils.parseUnits(
+  const amountGet = ethers.utils.parseUnits(order.amount.toString(), 18);
+  const tokenGive = tokens[0].address;
+  const amountGive = ethers.utils.parseUnits(
     (order.amount * order.price).toString(),
     18
   );
-  const tokenGive = tokens[0].address;
-  const amountGive = ethers.utils.parseUnits(order.amount.toString(), 18);
   dispatch(orderRequest());
 
   try {

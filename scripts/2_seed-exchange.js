@@ -44,7 +44,7 @@ async function main() {
 
   // Distribute tokens
   const sender = accounts[0];
-  const receiver = accounts[2];
+  const receiver = accounts[1];
   const amount = tokens(10000);
 
   //Give mETH tokens to account[2]
@@ -57,7 +57,7 @@ async function main() {
 
   //Set up exchange users
   const user1 = accounts[0];
-  const user2 = accounts[2];
+  const user2 = accounts[1];
   amount;
   // User1 approves 10,000 gstn tokens
   transaction = await gstn.connect(user1).approve(exchange.address, amount);
@@ -92,7 +92,7 @@ async function main() {
   );
 
   //////////////////////////////////////////////////////////////////////////////
-  // Seed a cancel order
+  // Seed cancel order
   //
 
   // User1 makes order

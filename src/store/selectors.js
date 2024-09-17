@@ -8,6 +8,7 @@ const RED = "#F45353";
 
 const account = (state) => get(state, "provider.account");
 const tokens = (state) => get(state, "tokens.contracts");
+const events = (state) => get(state, "exchange.events");
 const allOrders = (state) => get(state, "exchange.allOrders.data", []);
 const cancelledOrders = (state) =>
   get(state, "exchange.cancelledOrders.data", []);
@@ -30,6 +31,23 @@ const openOrders = (state) => {
   });
   return openOrders;
 };
+
+// ----------------------------------------------------------------------------------------
+//My Events
+export const myEventsSelector = createSelector(
+  account,
+  events,
+  (account, events) => {
+    if (!account || !events[0] || !events[0].transactionHash) {
+      return;
+    }
+    //Filter events that belong to current account
+    events = events.filter((e) => e.args.user === account);
+    console.log(events[0]);
+
+    return events;
+  }
+);
 
 // ----------------------------------------------------------------------------------------
 //My open orders
@@ -328,7 +346,7 @@ export const priceChartSelector = createSelector(
     orders = orders.map((o) => decorateOrder(o, tokens));
 
     let secondLastOrder, lastOrder;
-    //Get last 2 traded order for final price& price change
+    //Get last 2 traded order for final price & price change
     [secondLastOrder, lastOrder] = orders.slice(
       orders.length - 2,
       orders.length
