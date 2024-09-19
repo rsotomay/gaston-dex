@@ -20,6 +20,7 @@ import {
   cancelledOrdersLoaded,
   filledOrdersLoaded,
   ordersLoaded,
+  eventsLoaded,
   transferRequest,
   transferSuccess,
   transferFail,
@@ -148,8 +149,8 @@ export const subscribeToEvents = (exchange, dispatch) => {
       creator,
       event
     ) => {
-      const order = event.args;
-      dispatch(fillSuccess(order, event));
+      // const order = event.args;
+      dispatch(fillSuccess(event));
     }
   );
 };
@@ -205,6 +206,19 @@ export const loadAllOrders = async (provider, exchange, dispatch) => {
   const allOrders = orderStream.map((event) => event.args);
 
   dispatch(ordersLoaded(allOrders));
+};
+
+export const loadEvents = async (provider, exchange, dispatch) => {
+  const block = await provider.getBlockNumber();
+
+  //Fetch events
+  const eventsStream = await exchange.queryFilter(
+    ["Deposit", "Withdrawal", "Order", "Cancel", "Trade"],
+    0,
+    block
+  );
+  const events = eventsStream.map((event) => event);
+  dispatch(eventsLoaded(events));
 };
 
 export const transferTokens = async (

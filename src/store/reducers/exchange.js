@@ -62,6 +62,10 @@ export const exchange = createSlice({
       state.allOrders.loaded = true;
       state.allOrders.data = action.payload;
     },
+    // Events
+    eventsLoaded: (state, action) => {
+      state.events = action.payload;
+    },
     // Deposits & Withdrawals
     transferRequest: (state, action) => {
       state.transfering.transferInProgress = true;
@@ -169,6 +173,7 @@ export const {
   cancelledOrdersLoaded,
   filledOrdersLoaded,
   ordersLoaded,
+  eventsLoaded,
   transferRequest,
   transferSuccess,
   transferFail,

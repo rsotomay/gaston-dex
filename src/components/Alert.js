@@ -7,10 +7,27 @@ const Alert = () => {
   const alertRef = useRef(null);
   const chainId = useSelector((state) => state.provider.chainId);
   const account = useSelector((state) => state.provider.account);
-  const isPending = useSelector(
+  const isTransferPending = useSelector(
     (state) => state.exchange.transfering.transferInProgress
   );
-  const isError = useSelector((state) => state.exchange.transfering.isError);
+  const isTransferError = useSelector(
+    (state) => state.exchange.transfering.isError
+  );
+  const isOrderPending = useSelector(
+    (state) => state.exchange.ordering.orderInProgress
+  );
+  const isOrderError = useSelector((state) => state.exchange.ordering.isError);
+  const isCancelPending = useSelector(
+    (state) => state.exchange.cancelling.cancelInProgress
+  );
+  const isCancelError = useSelector(
+    (state) => state.exchange.cancelling.isError
+  );
+  const isFillPending = useSelector(
+    (state) => state.exchange.filling.fillInProgress
+  );
+  const isFillError = useSelector((state) => state.exchange.filling.isError);
+
   const events = useSelector(myEventsSelector);
 
   const removeHandler = async (e) => {
@@ -18,14 +35,38 @@ const Alert = () => {
   };
 
   useEffect(() => {
-    if ((isPending || isError) && account) {
+    if (
+      (isTransferPending ||
+        isOrderPending ||
+        isTransferError ||
+        isOrderError ||
+        isCancelPending ||
+        isCancelError ||
+        isFillPending ||
+        isFillError) &&
+      account
+    ) {
       alertRef.current.className = "alert";
     }
-  }, [events, isPending, isError, account]);
+  }, [
+    events,
+    isTransferPending,
+    isOrderPending,
+    isTransferError,
+    isOrderError,
+    isCancelPending,
+    isCancelError,
+    isFillPending,
+    isFillError,
+    account,
+  ]);
 
   return (
     <div>
-      {isPending ? (
+      {isTransferPending ||
+      isOrderPending ||
+      isCancelPending ||
+      isFillPending ? (
         <div
           className="alert alert--remove"
           onClick={removeHandler}
@@ -33,7 +74,7 @@ const Alert = () => {
         >
           <h1>Transaction Pending...</h1>
         </div>
-      ) : isError ? (
+      ) : isTransferError || isOrderError || isCancelError || isFillError ? (
         <div
           className="alert alert--remove"
           onClick={removeHandler}
@@ -41,13 +82,13 @@ const Alert = () => {
         >
           <h1>Transaction Will Fail</h1>
         </div>
-      ) : !isPending && events && events[0] ? (
+      ) : !isTransferPending && events && events[0] ? (
         <div
           className="alert alert--remove"
           onClick={removeHandler}
           ref={alertRef}
         >
-          <h1>Transaction Successful</h1>
+          <h1>Transfer Successful</h1>
           <a
             href={
               config[chainId]
@@ -61,6 +102,14 @@ const Alert = () => {
               "..." +
               events[0].transactionHash.slice(60, 66)}
           </a>
+        </div>
+      ) : !isOrderPending || !isCancelPending || !isFillPending ? (
+        <div
+          className="alert alert--remove"
+          onClick={removeHandler}
+          ref={alertRef}
+        >
+          <h1>Transaction Successful</h1>
         </div>
       ) : (
         <div

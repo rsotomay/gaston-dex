@@ -9,6 +9,7 @@ import {
   loadTokens,
   loadExchange,
   loadAllOrders,
+  loadEvents,
   subscribeToEvents,
 } from "../store/interactions";
 
@@ -46,6 +47,8 @@ function App() {
     const exchange = await loadExchange(provider, chainId, dispatch);
     //Fetch all orders
     loadAllOrders(provider, exchange, dispatch);
+    // Fetch all events
+    loadEvents(provider, exchange, dispatch);
     //Listen to events
     subscribeToEvents(exchange, dispatch);
   };

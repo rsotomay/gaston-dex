@@ -8,11 +8,11 @@ const RED = "#F45353";
 
 const account = (state) => get(state, "provider.account");
 const tokens = (state) => get(state, "tokens.contracts");
-const events = (state) => get(state, "exchange.events");
+const events = (state) => get(state, "exchange.events", []);
 const allOrders = (state) => get(state, "exchange.allOrders.data", []);
+const filledOrders = (state) => get(state, "exchange.filledOrders.data", []);
 const cancelledOrders = (state) =>
   get(state, "exchange.cancelledOrders.data", []);
-const filledOrders = (state) => get(state, "exchange.filledOrders.data", []);
 
 const openOrders = (state) => {
   const all = allOrders(state);
@@ -43,8 +43,6 @@ export const myEventsSelector = createSelector(
     }
     //Filter events that belong to current account
     events = events.filter((e) => e.args.user === account);
-    console.log(events[0]);
-
     return events;
   }
 );
